@@ -59,9 +59,9 @@ parceluni <- read.csv("https://github.com/neildpatel/canaldistricts/blob/main/As
 parcelmerged <- inner_join(valuation, parceluni, by = "pin")
 
 # A little data cleaning to convert the valuation field from string to numeric
-parcelmerged$mailed_tot <- parcelmerged$mailed_tot |> 
-  gsub("\\$", "", x = _) |>   # remove dollar signs
-  gsub(",", "", x = _) |>     # remove commas
+parcelmerged$mailed_tot <- parcelmerged$mailed_tot %>% 
+  gsub("\\$", "", x = _) %>%   
+  gsub(",", "", x = _) %>%     
   as.numeric()
 
 # A little more data cleaning - filter for parcel values over $10,000 and with valid lat/long coordinates
@@ -75,7 +75,7 @@ parcelvalues <- parcelmerged %>%
 parcel_sf <- st_as_sf(
   parcelvalues,
   coords = c("longitude", "latitude"),
-  crs = st_crs(tif)   # use same CRS as your TIF layer
+  crs = st_crs(tif)   
 )
 
 # 2.3. Transform to projected CRS to use distances in meters
@@ -478,5 +478,80 @@ ggplot() +
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     plot.title = element_text(face = "bold", hjust = 0.5)
+  )
+
+## 4.5 Canal corridor
+# Subset canal TIFs
+canal_tifs <- tif %>%
+  filter(canal_tif == 1)
+
+# Build a unified plotting object with identifiers for the legend
+plot_canals <- canal %>%
+  mutate(type = "Canal")
+
+plot_buffer <- canal_buffer %>%
+  mutate(type = "1 km Canal Buffer")
+
+plot_tifs <- canal_tifs %>%
+  mutate(type = "Canal TIF District")
+
+# Combined bounding box for nice zooming
+bbox <- st_bbox(canal_buffer)
+
+# Colors for legend
+fill_cols <- c(
+  "1 km Canal Buffer" = "lightblue",
+  "Canal TIF District" = "pink",
+  "Canal (centerline)" = NA
+)
+
+line_cols <- c(
+  "Canal" = "blue",
+  "1 km Canal Buffer" = NA,
+)
+
+ggplot() +
+  # BUFFER (polygon)
+  geom_sf(
+    data = plot_buffer,
+    aes(fill = type),
+    color = NA,
+    alpha = 0.25
+  ) +
+  
+  # TIF polygons
+  geom_sf(
+    data = plot_tifs,
+    aes(fill = type, color = type),
+    alpha = 0.5,
+    linewidth = 0.5
+  ) +
+  
+  # Canal line
+  geom_sf(
+    data = plot_canals,
+    aes(color = type),
+    linewidth = 1
+  ) +
+  
+  scale_fill_manual(values = fill_cols, name = "Layers") +
+  scale_color_manual(values = line_cols, name = "Layers") +
+  
+  coord_sf(
+    xlim = c(bbox["xmin"], bbox["xmax"]),
+    ylim = c(bbox["ymin"], bbox["ymax"]),
+    expand = FALSE
+  ) +
+  
+  labs(
+    title = "Sanitary & Ship Canal Buffer and Canal TIF Districts",
+    x = "", y = ""
+  ) +
+  
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid = element_blank(),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    legend.position = "right"
   )
 
