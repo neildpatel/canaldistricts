@@ -52,8 +52,8 @@ tif <- tif %>%
 
 ### 2. DOWNLOAD OUTCOME VARIABLE
 ## 2.1. Load parcel data from Cook County Assessor's Office
-valuation <- read.csv("[LINK TO ASSESSED VALUE DATASET]")
-parceluni <- read.csv("[LINK TO PARCEL UNIVERSE DATASET]")
+valuation <- read.csv("https://github.com/neildpatel/canaldistricts/blob/main/Assessor_-_Assessed_Values_20251119.csv")
+parceluni <- read.csv("https://github.com/neildpatel/canaldistricts/blob/main/Assessor_-_Parcel_Universe_(Current_Year_Only)_20251119.csv")
 
 # Join the CSVs using parcel pin-ID
 parcelmerged <- inner_join(valuation, parceluni, by = "pin")
