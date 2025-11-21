@@ -86,7 +86,7 @@ parcel_utm <- st_transform(parcel_sf, 26916)
 tif_union    <- st_union(tif_utm)
 tif_boundary <- st_boundary(tif_union)
 
-dist_mat <- st_distance(parcel_utm, tif_boundary)  # matrix n x 1
+dist_mat <- st_distance(parcel_utm, tif_boundary)  
 parcel_sf$dist_to_tif_border_m <- as.numeric(dist_mat)
 
 # 2.5. Create a signed distance (inside TIF = positive, outside = negative)
